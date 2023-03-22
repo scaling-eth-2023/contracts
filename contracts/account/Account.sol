@@ -3,16 +3,17 @@
 pragma solidity ^0.8.0;
 
 import {AccountMembership} from "./AccountMembership.sol";
+import {RecoveryGuardian} from "./RecoveryGuardian.sol";
+
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import "@matterlabs/zksync-contracts/l2/system-contracts/interfaces/IAccount.sol";
 import "@matterlabs/zksync-contracts/l2/system-contracts/libraries/TransactionHelper.sol";
 import "@matterlabs/zksync-contracts/l2/system-contracts/libraries/SystemContractHelper.sol";
 import {BOOTLOADER_FORMAL_ADDRESS, NONCE_HOLDER_SYSTEM_CONTRACT, DEPLOYER_SYSTEM_CONTRACT, INonceHolder} from "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
 
-contract SimpleAccount is IAccount, AccountMembership {
+contract Account is IAccount, Ownable, RecoveryGuardian, AccountMembership {
     using TransactionHelper for *;
-
-    mapping(address => bool) private owners;
 
     modifier ignoreNonBootloader() {
         if (msg.sender != BOOTLOADER_FORMAL_ADDRESS) {
@@ -37,14 +38,29 @@ contract SimpleAccount is IAccount, AccountMembership {
         _;
     }
 
-    constructor(address[] memory _owners) {
-        for (uint i = 0; i < _owners.length; i++) {
-            owners[_owners[i]] = true;
-        }
+    //*///////////////////////////////////////////////////////////////
+    //    CONSTRUCTOR
+    ///////////////////////////////////////////////////////////////*/
+
+    constructor(address _owner) {
+        _transferOwnership(_owner);
     }
 
-    function isOwner(address user) external view returns (bool) {
-        return owners[user];
+    //*///////////////////////////////////////////////////////////////
+    //    EXTERNALS
+    ///////////////////////////////////////////////////////////////*/
+
+    function recoverAccountByGuardian(
+        address _newOwner,
+        bytes32 _messageHash,
+        bytes memory _signature
+    ) public onlyOwner {
+        bool isValidGuardianSign = _verifyGuardianSignature(
+            _messageHash,
+            _signature
+        );
+        require(isValidGuardianSign, "INVALID GUARDIAN SIGNATURE");
+        _transferOwnership(_newOwner);
     }
 
     function validateTransaction(
@@ -192,7 +208,7 @@ contract SimpleAccount is IAccount, AccountMembership {
         );
 
         address recoveredAddress = ecrecover(_hash, v, r, s);
-        return owners[recoveredAddress];
+        return owner() == recoveredAddress ? true : false;
     }
 
     function payForTransaction(

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.0;
 
-import {IMembership} from "./interfaces/IMembership.sol";
+import {IMembership} from "../interfaces/IMembership.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {Transaction} from "@matterlabs/zksync-contracts/l2/system-contracts/libraries/TransactionHelper.sol";
 

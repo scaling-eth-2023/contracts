@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.0;
 
-import {SimpleAccount} from "./SimpleAccount.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
 import {L2ContractHelper} from "@matterlabs/zksync-contracts/l2/contracts/L2ContractHelper.sol";
@@ -12,29 +12,24 @@ import {SystemContractsCaller} from "@matterlabs/zksync-contracts/l2/system-cont
 import {IPaymaster, ExecutionResult, PAYMASTER_VALIDATION_SUCCESS_MAGIC} from "@matterlabs/zksync-contracts/l2/system-contracts/interfaces/IPaymaster.sol";
 
 // Factory for creating Account Contract
-// It is also a paymaster that will pay the contract deployment.
-contract WalletFactory is IPaymaster {
-    event CreateWallet(address indexed account, bytes owners);
+// It is also a paymaster that will pay for the contract deployment.
+contract AccountFactory is IPaymaster, Ownable {
+    event CreateAccount(address indexed account, address owner);
 
     address private operator;
-    bytes32 private walletContractHash;
+    bytes32 private accountContractBytecodeHash;
 
-    constructor(bytes32 bytecodeHash) {
-        operator = msg.sender;
-        walletContractHash = bytecodeHash;
+    constructor(bytes32 _accountContractBytecodeHash) {
+        accountContractBytecodeHash = _accountContractBytecodeHash;
     }
 
-    function getAccountBytecodeHash() external view returns (bytes32) {
-        return walletContractHash;
-    }
-
-    function getOperator() external view returns (address) {
-        return operator;
+    function getAccountContractBytecodeHash() public view returns (bytes32) {
+        return accountContractBytecodeHash;
     }
 
     function deployWallet(
         bytes32 _salt,
-        address[] memory owners
+        address _owner
     ) external returns (address accountAddress) {
         (bool success, bytes memory returnData) = SystemContractsCaller
             .systemCallWithReturndata(
@@ -45,8 +40,8 @@ contract WalletFactory is IPaymaster {
                     DEPLOYER_SYSTEM_CONTRACT.create2Account,
                     (
                         _salt,
-                        walletContractHash,
-                        abi.encode(owners),
+                        accountContractBytecodeHash,
+                        abi.encode(_owner),
                         IContractDeployer.AccountAbstractionVersion.Version1
                     )
                 )
@@ -55,7 +50,7 @@ contract WalletFactory is IPaymaster {
         require(success, "Contract deployment failed");
 
         (accountAddress) = abi.decode(returnData, (address));
-        emit CreateWallet(accountAddress, abi.encode(owners));
+        emit CreateAccount(accountAddress, _owner);
     }
 
     function validateAndPayForPaymasterTransaction(
