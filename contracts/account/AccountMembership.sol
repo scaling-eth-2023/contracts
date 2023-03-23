@@ -27,13 +27,15 @@ abstract contract AccountMembership {
         return subscribedMemberships.contains(membership);
     }
 
-    /// @notice Will go through all the subscribed memberships' `validateTransaction` method
+    /// @notice Will go through all the subscribed memberships' `validateAndExecuteMembershipTransaction` method
     function _executeMemberships(Transaction calldata _transaction) internal {
         uint total = subscribedMemberships.length();
 
         for (uint i = 0; i < total; i++) {
             address membership = subscribedMemberships.at(i);
-            IMembership(membership).validateAndExecuteMembership(_transaction);
+            IMembership(membership).validateAndExecuteMembershipTransaction(
+                _transaction
+            );
         }
     }
 }

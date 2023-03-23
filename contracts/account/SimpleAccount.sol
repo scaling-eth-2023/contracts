@@ -12,7 +12,12 @@ import "@matterlabs/zksync-contracts/l2/system-contracts/libraries/TransactionHe
 import "@matterlabs/zksync-contracts/l2/system-contracts/libraries/SystemContractHelper.sol";
 import {BOOTLOADER_FORMAL_ADDRESS, NONCE_HOLDER_SYSTEM_CONTRACT, DEPLOYER_SYSTEM_CONTRACT, INonceHolder} from "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
 
-contract Account is IAccount, Ownable, RecoveryGuardian, AccountMembership {
+contract SimpleAccount is
+    IAccount,
+    Ownable,
+    RecoveryGuardian,
+    AccountMembership
+{
     using TransactionHelper for *;
 
     modifier ignoreNonBootloader() {
@@ -212,8 +217,8 @@ contract Account is IAccount, Ownable, RecoveryGuardian, AccountMembership {
     }
 
     function payForTransaction(
-        bytes32, // _txHash
-        bytes32, // _suggestedSignedHash
+        bytes32,
+        bytes32,
         Transaction calldata _transaction
     ) external payable ignoreNonBootloader ignoreInDelegateCall {
         bool success = _transaction.payToTheBootloader();
@@ -221,13 +226,13 @@ contract Account is IAccount, Ownable, RecoveryGuardian, AccountMembership {
     }
 
     function prepareForPaymaster(
-        bytes32, // _txHash
-        bytes32, // _suggestedSignedHash
+        bytes32,
+        bytes32,
         Transaction calldata _transaction
     ) external payable ignoreNonBootloader ignoreInDelegateCall {
         //
-        // THIS IS JUST FOR TESTING PURPOSES
-        // IN REAL WORLD, THIS IS NOT VERY SAFE AT ALL
+        // THIS IS JUST FOR DEMO PURPOSES ONLY.
+        // PLEASE DON'T DO THIS IN PRODUCTION.
         //
         // BAD THING STARTS HERE
         uint256 requiredETH = _transaction.gasLimit * _transaction.maxFeePerGas;

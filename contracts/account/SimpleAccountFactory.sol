@@ -13,7 +13,7 @@ import {IPaymaster, ExecutionResult, PAYMASTER_VALIDATION_SUCCESS_MAGIC} from "@
 
 // Factory for creating Account Contract
 // It is also a paymaster that will pay for the contract deployment.
-contract AccountFactory is IPaymaster, Ownable {
+contract SimpleAccountFactory is IPaymaster, Ownable {
     event CreateAccount(address indexed account, address owner);
 
     address private operator;
