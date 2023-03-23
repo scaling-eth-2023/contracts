@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {Transaction} from "@matterlabs/zksync-contracts/l2/system-contracts/libraries/TransactionHelper.sol";
 
 interface IMembership {
-    function getMembershipStatus(address user) external view returns (uint256);
+    function userTier(address _user) external view returns (uint256);
 
     /**
      * @notice Initialize user into the membership. Membership status will only be recorded after user has subscribed.
@@ -24,11 +24,12 @@ interface IMembership {
     /**
      *
      * IMPORTANT: THIS IS NOT VERY SAFE AS USER CAN CALL THIS FUNCTION WITH FAKE `_transaction`.
+     * ONLY FOR DEMO PURPOSES TO SHOW THINGS WORK.
      *
      * @dev Should run the membership validation logic to update the user's membership status.
      * @dev This function is to be called in every transaction.
      */
-    function validateAndExecuteMembership(
+    function validateAndExecuteMembershipTransaction(
         Transaction calldata _transaction
     ) external returns (bool);
 }
