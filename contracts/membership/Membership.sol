@@ -10,6 +10,15 @@ import {IPaymaster, ExecutionResult, PAYMASTER_VALIDATION_SUCCESS_MAGIC} from "@
 
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
+struct PrepareTierData {
+    // The tier position. Generally, we assume `low tier number == better tier` (eg Tier 1 > Tier 2).
+    uint256 tier;
+    uint256 benefit;
+    uint256 txCountThreshold;
+    bytes4 functionSelector;
+    address contractAddress;
+}
+
 contract Membership is IMembership, IPaymaster {
     /**
      *
@@ -24,15 +33,6 @@ contract Membership is IMembership, IPaymaster {
     ///
     /// @dev `txCountThreshold` The total number of transactions that is needed to complete the tier.
     struct TierData {
-        uint256 benefit;
-        uint256 txCountThreshold;
-        bytes4 functionSelector;
-        address contractAddress;
-    }
-
-    struct PrepareTierData {
-        // The tier position. Generally, we assume `low tier number == better tier` (eg Tier 1 > Tier 2).
-        uint256 tier;
         uint256 benefit;
         uint256 txCountThreshold;
         bytes4 functionSelector;

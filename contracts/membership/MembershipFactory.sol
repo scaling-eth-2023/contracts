@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.0;
 
+import {PrepareTierData} from "./Membership.sol";
+
 import "@matterlabs/zksync-contracts/l2/system-contracts/Constants.sol";
 import {IContractDeployer} from "@matterlabs/zksync-contracts/l2/system-contracts/interfaces/IContractDeployer.sol";
 import {SystemContractsCaller} from "@matterlabs/zksync-contracts/l2/system-contracts/libraries/SystemContractsCaller.sol";
@@ -14,10 +16,9 @@ contract MembershipFactory {
         membershipTemplateBytecodeHash = _membershipTemplateBytecodeHash;
     }
 
-    function createMembershipContract()
-        external
-        returns (address contractAddress)
-    {
+    function createMembershipContract(
+        PrepareTierData[] memory _prepareTierData
+    ) external returns (address contractAddress) {
         (bool success, bytes memory returnData) = SystemContractsCaller
             .systemCallWithReturndata(
                 uint32(gasleft()),
@@ -25,7 +26,11 @@ contract MembershipFactory {
                 uint128(0),
                 abi.encodeCall(
                     DEPLOYER_SYSTEM_CONTRACT.create,
-                    (0, membershipTemplateBytecodeHash, abi.encode())
+                    (
+                        0,
+                        membershipTemplateBytecodeHash,
+                        abi.encode(_prepareTierData)
+                    )
                 )
             );
 
