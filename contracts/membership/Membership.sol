@@ -57,6 +57,8 @@ contract Membership is IMembership, IPaymaster {
 
     string private _name;
 
+    uint256 private _tierCount;
+
     mapping(address => uint256) private _userTier;
 
     // We assume that < 0 is invalid tier (and 0 means not subscribed)
@@ -80,6 +82,8 @@ contract Membership is IMembership, IPaymaster {
                 txCountThreshold: _prepareTierData[i].txCountThreshold
             });
         }
+
+        _tierCount = _prepareTierData.length;
     }
 
     //*///////////////////////////////////////////////////////////////
@@ -94,12 +98,19 @@ contract Membership is IMembership, IPaymaster {
         return _tierData[_tier].benefit;
     }
 
+    function totalTier() external view returns (uint256) {
+        return _tierCount;
+    }
+
     //*///////////////////////////////////////////////////////////////
     //    EXXTERNALS
     ///////////////////////////////////////////////////////////////*/
 
+    /// @notice when user subscibe for the first time, they get put into the lowest tier.
+    /// Here we assume that tiers will all have sequential numbering and the biggest tier number is considered
+    /// the starting tier.
     function subscribe() external {
-        _userTier[msg.sender] = 1;
+        _userTier[msg.sender] = _tierCount;
         emit UserSubscribe(msg.sender);
     }
 
