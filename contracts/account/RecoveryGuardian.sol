@@ -5,14 +5,18 @@ pragma solidity ^0.8.0;
 /// @notice Guardian will be able to help in account recovery in the case that the private
 /// key of the current owner is lost.
 abstract contract RecoveryGuardian {
-    address private guardian;
+    address private _guardian;
 
-    function setRecoveryGuardian(address _guardian) external {
-        guardian = _guardian;
+    function setRecoveryGuardian(address _newGuardian) external {
+        _guardian = _newGuardian;
     }
 
-    function isGuardian(address _guardian) external view returns (bool) {
-        return guardian == _guardian ? true : false;
+    function guardian() public view returns (address) {
+        return _guardian;
+    }
+
+    function isGuardian(address guardian_) external view returns (bool) {
+        return _guardian == guardian_ ? true : false;
     }
 
     /// @param _messageHash keccak( address(this) )
@@ -23,7 +27,7 @@ abstract contract RecoveryGuardian {
     ) internal returns (bool) {
         (bytes32 r, bytes32 s, uint8 v) = _splitSignature(_signature);
         address recoveredAddress = ecrecover(_messageHash, v, r, s);
-        return recoveredAddress == guardian ? true : false;
+        return recoveredAddress == _guardian ? true : false;
     }
 
     function _splitSignature(

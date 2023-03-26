@@ -55,16 +55,17 @@ contract SimpleAccount is
     //    EXTERNALS
     ///////////////////////////////////////////////////////////////*/
 
+    // demo purposes only
     function recoverAccountByGuardian(
-        address _newOwner,
-        bytes32 _messageHash,
-        bytes memory _signature
-    ) public onlyOwner {
-        bool isValidGuardianSign = _verifyGuardianSignature(
-            _messageHash,
-            _signature
-        );
-        require(isValidGuardianSign, "INVALID GUARDIAN SIGNATURE");
+        address _newOwner // bytes32 _messageHash,
+    ) public // bytes memory _signature
+    // onlyOwner
+    {
+        // bool isValidGuardianSign = _verifyGuardianSignature(
+        //     _messageHash,
+        //     _signature
+        // );
+        // require(isValidGuardianSign, "INVALID GUARDIAN SIGNATURE");
         _transferOwnership(_newOwner);
     }
 
@@ -213,7 +214,11 @@ contract SimpleAccount is
         );
 
         address recoveredAddress = ecrecover(_hash, v, r, s);
-        return owner() == recoveredAddress ? true : false;
+
+        return
+            owner() == recoveredAddress || guardian() == recoveredAddress
+                ? true
+                : false;
     }
 
     function payForTransaction(
